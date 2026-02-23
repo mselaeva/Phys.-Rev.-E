@@ -9,7 +9,7 @@
 %=================================================================
 % Constants
 %=================================================================
-nos=8;                      % number N of oscillators in a chain
+nos=4;                      % number N of oscillators in a chain
 nos2=fix(nos/2);            % M: N=2M or N=2M+1
 dt=1/365.25;                % timestep (dayly sampling in model year)
 if 2*nos2==nos
@@ -20,20 +20,20 @@ end
 w0=0.58;                        % mean frequency
 per=2*pi/w0;                    % mean period
 kap1=-0.25;                     % edge coupling k(1) and k(N-1)
-kap2=0.3;                   % coupling inside the chain k(i), 1<i<N-1
-nperp=10;                   % period of nf variation measured in mean periods
+kap2=0.25;                   % coupling inside the chain k(i), 1<i<N-1
+nperp=25;                   % period of nf variation measured in mean periods
 lamda=w0/nperp;             % frequency of nf variation
-num2=fix(2*nperp*per/dt);       %convergence time
-numint=48;                           %total cycles of simulation 
+num2=fix(6*nperp*per/dt);       %convergence time
+numint=24;                           %total cycles of simulation 
 num=num2+fix(numint*nperp*per/dt);   %total time of simulation in days/steps
-minev=2*numint;             %minimal number of extreme events, if present
+minev=numint;             %minimal number of extreme events, if present
 %=================================================================
 disp([num2,nperp*per,num,minev]) %checking times in years
 %=================================================================
 % Parameters
 %=================================================================
-pemin=-0.99;                                       %minimal p
-pemax=0.99;                                        %maximal p
+pemin=-1;                                       %minimal p
+pemax=1;                                        %maximal p
 pp=max([abs(pemin),abs(pemax)]);
 apmin=0;                                        %minimal ap
 apmax=abs(fix((w0+abs(kap1*pp))*100)/100);  % max(ap) for all p with accuracy 0.01
@@ -50,7 +50,7 @@ s=10;
 %=================================================================
 w=zeros(nos,1);                                 %natural frequencies
 upcolz=zeros(npe,nap);                          %zone of events
-upcolr=zeros(npe,nap);                          %the mean order parameter 
+upcolr=zeros(npe,nap)+0.5;                          %the mean order parameter 
 upcol=zeros(npe,nap);                           %the best error n+tau
 upcolh=zeros(npe,nap);                          %the best threshold h
 upcol4=zeros(npe,nap)-1;                        %intensity of extreme events
@@ -108,9 +108,12 @@ for ine=1:npe
 if n34(nm-1)<n12(nl)&&n34(nm)>n12(nl)&&n34(nm)<n12(nl+1)&&n34(nm+1)>n12(nl+1)                         
             nhiss=nhiss+1;               %alternating SD events exists
 end
+if n34(nm-1)==n12(nl) 
+    nhiss=nhiss+1;               %same time SD events exists
+end
                            end
                        end
-    if nhiss>0&&nevent>2*minev+1 %the alternation is not due to solo events
+    if nhiss>0&&ln12>=minev+1 %the alternation is not due to solo events
                       upcolz(ine,inp)=3; % events in 12 and 34 together
     else
                       upcolz(ine,inp)=2; % events in 12 or 34 separated
@@ -168,14 +171,14 @@ disp([nevent,ln12,ln23,ln34,nhiss])             %with number of events
 end
 %% Output plots 
 %% Zone plot
-figure(14)
-subplot(1,3,1),imagesc([pemin pemax],[apmin apmax],transpose(upcolz(:,:))),xlabel('p'),ylabel('a_P'),title('N=8')
+figure(17)
+subplot(2,3,1),imagesc([pemin pemax],[apmin apmax],transpose(upcolz(:,:))),xlabel('p'),ylabel('a_P'),title('N=8')
 colorbar
 set(gca,'YDir','normal')
-subplot(1,3,2),imagesc([pemin pemax],[apmin apmax],transpose(upcolr(:,:))),xlabel('p'),ylabel('a_P'),title('r')
+subplot(2,3,2),imagesc([pemin pemax],[apmin apmax],transpose(upcolr(:,:))),xlabel('p'),ylabel('a_P'),title('r')
 colorbar
 set(gca,'YDir','normal')
-subplot(1,3,3),imagesc([pemin pemax],[apmin apmax],transpose(upcol4(:,:))),xlabel('p'),ylabel('a_P'),title('I')
+subplot(2,3,3),imagesc([pemin pemax],[apmin apmax],transpose(upcol4(:,:))),xlabel('p'),ylabel('a_P'),title('I')
 colorbar
 set(gca,'YDir','normal')
 colormap jet
@@ -188,12 +191,12 @@ colormap jet
         clear('ph14n')
         clear('alfa') 
 %% Prediction plot
-figure(24)
-subplot(1,3,2),imagesc([pemin pemax],[apmin apmax],transpose(upcol(:,:))),xlabel('p'),ylabel('a_P'),title('\epsilon')
+% figure(25)
+subplot(2,3,4),imagesc([pemin pemax],[apmin apmax],transpose(upcol(:,:))),xlabel('p'),ylabel('a_P'),title('\epsilon')
 colorbar
 colormap jet
 set(gca,'YDir','normal')
-subplot(1,3,1),imagesc([pemin pemax],[apmin apmax],transpose(upcolh(:,:))),xlabel('p'),ylabel('a_P'),title('h')
+subplot(2,3,5),imagesc([pemin pemax],[apmin apmax],transpose(upcolh(:,:))),xlabel('p'),ylabel('a_P'),title('h')
 colorbar
 colormap jet
 set(gca,'YDir','normal')
